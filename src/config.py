@@ -7,6 +7,7 @@ import math
 #default G = 256
 NUM_CELLS = [16]
 
+RUN_X_TIMES = 1
 
 COMBO = [
     # (100, 20),
