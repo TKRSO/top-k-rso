@@ -7,31 +7,31 @@ import math
 #default G = 256
 NUM_CELLS = [16]
 
-RUN_X_TIMES = 1
+RUN_X_TIMES = 5
 
 COMBO = [
     # (100, 20),
     (200, 20),
     (500, 20),
-    (500, 15),
-    # (1000, 10),
-    # (1000, 20),
-    # (1000, 50),
-    # (1000, 100),
-    # (5000, 20),
+    #(500, 15),
+    (1000, 10),
+    (1000, 20),
+    (1000, 50),
+    (1000, 100),
+    (5000, 20),
     # (5000, 50),
     # (5000, 100)
 ]
 
 GAMMAS = [1, 0.5, 0.65, 0.75]  # example values for g
 
-wrf = 0.2  # scaling factor for rF in baseline_iadu
+wrf = 0.7  # scaling factor for rF in baseline_iadu
 
 DATASET_NAMES = [
     "dbpedia_1994_FIFA_World_Cup_squads",
-    # "dbpedia_1998_FIFA_World_Cup_squads",
-    # "dbpedia_2002_FIFA_World_Cup_squads",
-    # "dbpedia_2010_FIFA_World_Cup_squads",
+    "dbpedia_1998_FIFA_World_Cup_squads",
+    "dbpedia_2002_FIFA_World_Cup_squads",
+    "dbpedia_2010_FIFA_World_Cup_squads",
 ]
 
 '''

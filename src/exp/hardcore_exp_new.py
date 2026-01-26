@@ -11,12 +11,12 @@ from log.plotter import ExperimentPlotter
 from alg.baseline_iadu import iadu, load_dataset
 from alg.grid_iadu import grid_iadu
 from alg.biased_sampling import biased_sampling, old_sampling
-from alg.extension_sampling import grid_weighted_sampling, stratified_grid_sampling, stratified_sampling
+from alg.extension_sampling import grid_sampling, stratified_grid_sampling, stratified_sampling
 
 def run():
     # 1. Initialize Logger and Plotter
     # The plotter is now initialized once and will accumulate pages into the PDF
-    logger = ExperimentLogger("results", baseline_name="base_iadu")
+    logger = ExperimentLogger("std_results0.5", baseline_name="base_iadu")
     plotter = ExperimentPlotter("plots.pdf")
 
     # 2. Initialize Runner with the Plotter's callback
@@ -27,6 +27,7 @@ def run():
     print("Registering algorithms...")
     runner.register("base_iadu", iadu)
     runner.register("stratified_sampling", stratified_sampling)
+    runner.register("grid_sampling(cardinality)", grid_sampling)
     runner.register("sampling", old_sampling)
     runner.register("biased_sampling", biased_sampling)
 

@@ -73,7 +73,7 @@ def grid_sampling(S: List[Place], k: int, W: float, G: int, optimal_psS, optimal
         # Throw Exception
         raise ValueError("Selected sample R is empty, cannot compute HPFR.")
         
-    score, sum_psS, sum_psR, sum_rF= HPFR_no_r(R, optimal_psS, optimal_sS, W, K)
+    score, sum_psS, sum_psR, sum_rF= HPFR(R, optimal_psS, optimal_sS, W, K)
 
     return R, score, sum_psS, sum_psR, sum_rF, prep_time, selection_time, len(CL), cell_stats
 

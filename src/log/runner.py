@@ -43,59 +43,40 @@ class ExperimentRunner:
 
                 # 4. Grid Size Loop
                 for G in G_values:
-                    # --- CACHING STEP ---
-                    # Run W-Independent algorithms (e.g. Random, Spatial) ONCE here.
-                    # We will reuse these results for every 'gamma'.
-                    cached_results = {}
-                    
-                    # Identify which algos don't need W/g/wrf
-                    w_independent_algos = []
-                    w_dependent_algos = []
-
-                    for name, algo_def in self.algorithms.items():
-                        sig = inspect.signature(algo_def['func'])
-                        # Check params for dependency on weights
-                        if any(p in sig.parameters for p in ['W', 'g', 'wrf']):
-                            w_dependent_algos.append(name)
-                        else:
-                            w_independent_algos.append(name)
-
-                    # Run Independent Algos Now
-                    if w_independent_algos:
-                        print(f"  > Running static algos for G={G}...")
-                        # We pass a dummy W=0, but filter ensures it isn't used
-                        cached_results = self._run_batch(
-                            w_independent_algos, S, k, 0, G, base_context
-                        )
-
                     # 5. Gamma Loop (Weight variations)
                     for g in gammas:
                         W = g * K / k
                         print(f"\n=== Running Combo: {shape} | K={K}, k={k}, G={G}, W={W:.2f} ===")
 
-                        # Initialize Row
-                        row = {
-                            "shape": shape, "K": K, "k": k, "W": W,
-                            "wrf": cfg.wrf,
-                            "g*K/k": f"{g}*K/k", "G": G, "lenCL": 0 
-                        }
+                        # 6. Repetition Loop: Run ALL algorithms X times
+                        # We execute every algorithm (independent or dependent) RUN_X_TIMES 
+                        # to capture variance and ensure consistent logging rows.
+                        for i in range(cfg.RUN_X_TIMES):
+                            
+                            # Initialize Row for this specific run
+                            row = {
+                                "shape": shape, "K": K, "k": k, "W": W,
+                                "wrf": cfg.wrf,
+                                "g*K/k": f"{g}*K/k", "G": G, "lenCL": 0,
+                                "run_id": i + 1  # Track which run this is
+                            }
 
-                        # Run Dependent Algos (Optimization methods that change with W)
-                        current_results = self._run_batch(
-                            w_dependent_algos, S, k, W, G, base_context
-                        )
+                            # Execute ALL registered algorithms for this run
+                            # We pass the full list of algorithms to be run in this batch
+                            current_results = self._run_batch(
+                                list(self.algorithms.keys()), S, k, W, G, base_context
+                            )
 
-                        # Merge Cached Results into Current Results
-                        current_results.update(cached_results)
+                            # Log everything to the row
+                            for name, res_data in current_results.items():
+                                self._log_result_to_row(row, name, res_data)
 
-                        # Log everything to the row
-                        for name, res_data in current_results.items():
-                            self._log_result_to_row(row, name, res_data)
+                            # Log the row immediately (no averaging)
+                            self.logger.log(row)
 
-                        self.logger.log(row)
-
-                        if self.plot_callback:
-                            self.plot_callback(S, shape, K, k, G, W, cfg.wrf, current_results)
+                            # Optional: Plotting (can be limited to the first run if desired, currently plots all)
+                            if self.plot_callback:
+                                self.plot_callback(S, shape, K, k, G, W, cfg.wrf, current_results)
         
         self.logger.save()
 
