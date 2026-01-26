@@ -19,10 +19,6 @@ def run():
     # The plotter is now initialized once and will accumulate pages into the PDF
     logger = ExperimentLogger("optical_test_results", baseline_name="base_iadu")
     plotter = ExperimentPlotter("optical_test_plots.pdf")
-
-    # 2. Initialize Runner with the Plotter's callback
-    # The updated ExperimentRunner passes (S, shape, K, k, G, W, wrf, algo_results)
-    # The updated ExperimentPlotter.plot_results accepts exactly these arguments.
     runner = ExperimentRunner(load_dataset, logger, plot_callback=plotter.plot_results)
 
     print("Registering algorithms...")
