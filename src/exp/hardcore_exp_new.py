@@ -8,15 +8,15 @@ from log.logger import ExperimentLogger
 from log.runner import ExperimentRunner
 from log.plotter import ExperimentPlotter
 # --- ALGORITHM IMPORTS ---
-from alg.baseline_iadu import iadu, load_dataset
+from alg.baseline_iadu import iadu, iadu_no_r, load_dataset
 from alg.grid_iadu import grid_iadu
 from alg.biased_sampling import biased_sampling, old_sampling
-from alg.extension_sampling import grid_sampling, stratified_grid_sampling, stratified_sampling
+from alg.extension_sampling import grid_sampling, stratified_sampling
 
 def run():
     # 1. Initialize Logger and Plotter
     # The plotter is now initialized once and will accumulate pages into the PDF
-    logger = ExperimentLogger("std_results0.5", baseline_name="base_iadu")
+    logger = ExperimentLogger("i am gay", baseline_name="base_iadu", aggregate_datasets=True)
     plotter = ExperimentPlotter("plots.pdf")
 
     # 2. Initialize Runner with the Plotter's callback

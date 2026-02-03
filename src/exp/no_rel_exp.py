@@ -7,30 +7,29 @@ import config as cfg
 from log.logger import ExperimentLogger
 from log.runner import ExperimentRunner
 from log.plotter import ExperimentPlotter
-
 # --- ALGORITHM IMPORTS ---
-from alg.baseline_iadu import iadu_no_r, load_dataset
-from alg.biased_sampling import sampling
-from alg.extension_sampling import grid_sampling
+from alg.baseline_iadu import iadu, iadu_no_r, load_dataset
+from alg.grid_iadu import grid_iadu
+from alg.biased_sampling import biased_sampling, old_sampling
+from alg.extension_sampling import grid_sampling, grid_sampling_no_r, stratified_sampling
 
 def run():
-    plotter = ExperimentPlotter("no_r_plots.pdf")
-    
-    logger = ExperimentLogger("no_rf_res", baseline_name="base_iadu_no_r")
-    
+    # 1. Initialize Logger and Plotter
+    # The plotter is now initialized once and will accumulate pages into the PDF
+    logger = ExperimentLogger("no_r", baseline_name="base_iadu", aggregate_datasets=True)
+    plotter = ExperimentPlotter("plots.pdf")
+
+    # 2. Initialize Runner with the Plotter's callback
+    # The updated ExperimentRunner passes (S, shape, K, k, G, W, wrf, algo_results)
+    # The updated ExperimentPlotter.plot_results accepts exactly these arguments.
     runner = ExperimentRunner(load_dataset, logger, plot_callback=plotter.plot_results)
 
     print("Registering algorithms...")
-    
-    runner.register("base_iadu_no_r", iadu_no_r)
-    runner.register("grid_sampling", grid_sampling)
-    runner.register("sampling", sampling)
+    runner.register("base_iadu_rf", iadu_no_r)
+    runner.register("grid_sampling(cardinality)", grid_sampling_no_r)
+    runner.register("sampling", old_sampling)
 
     print(f"=== Starting Experiment ===")
-    print(f"Datasets: {cfg.DATASET_NAMES}")
-    print(f"Combos: {cfg.COMBO}")
-    print(f"Grid Sizes: {cfg.NUM_CELLS}")
-    
     try:
         runner.run_all(
             datasets=cfg.DATASET_NAMES, 
@@ -41,11 +40,11 @@ def run():
     except KeyboardInterrupt:
         print("\nExperiment interrupted by user.")
     except Exception as e:
-        print(f"\n!!! CRITICAL ERROR !!! {e}")
+        print(f"Experiment failed: {e}")
         import traceback
         traceback.print_exc()
     finally:
-        # Properly close plotter and save logs
+        # 3. Clean up and Save
         plotter.close()
         logger.save()
 

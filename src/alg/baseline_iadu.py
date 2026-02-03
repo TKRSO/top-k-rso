@@ -36,7 +36,7 @@ def baseline_iadu_algorithm_no_r(S: List[Place], K_full: int, k: int, W: float, 
     candidates = copy.deepcopy(S)
 
     for p in candidates:
-        p.cHPF = 0
+        p.cHPF = psS[p.id]
     
     select_start = time.time()
     while len(R) < k:
