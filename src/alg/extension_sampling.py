@@ -59,7 +59,8 @@ def grid_sampling(S: List[Place], k: int, W: float, G: int, optimal_psS, optimal
             actual_pick = min(num_to_pick, cell.size())
             
             if actual_pick > 0:
-                R.extend(random.sample(cell.places, actual_pick))
+                sampled_places, _ = select_biased_random(cell.places, actual_pick)
+                R.extend(sampled_places)
 
     selection_time = time.time() - t_selection_start
     
@@ -127,7 +128,6 @@ def grid_sampling_no_r(S: List[Place], k: int, W: float, G: int, optimal_psS, op
                 R.extend(random.sample(cell.places, actual_pick))
 
     selection_time = time.time() - t_selection_start
-    
     
     for c in CL: # Use all non-empty cells
         cell_id = c.id
@@ -210,65 +210,3 @@ def stratified_sampling(S: List[Place], k: int, W: float, G: int, optimal_psS, o
     score, sum_psS, sum_psR, sum_rF = HPFR(R, optimal_psS, optimal_sS, W, K)
 
     return R, score, sum_psS, sum_psR, sum_rF, prep_time, selection_time, len(CL), cell_stats
-
-def quadtree_sampling(S: List[Place], k: int, W: float, m: int, d: int, optimal_psS, optimal_sS):
-
-    t_prep_start = time.time()
-    qtree = QuadTree(S, m, d)
-    leaves = qtree.get_leaves()
-    prep_time = time.time() - t_prep_start
-
-    K = len(S)
-    if K == 0 or k == 0:
-        return [], 0.0, 0.0, 0.0, prep_time, 0.0, 0, {}
-
-    t_selection_start = time.time()
-    
-    R: List[Place] = []
-    k_alloc: Dict[int, int] = {}
-    cell_stats: Dict[Tuple[int, int], Tuple[int, int]] = {}
-    remainders = []
-    total_k_allocated = 0
-    
-    leaf_map = {i: leaf for i, leaf in enumerate(leaves)}
-    
-    for i, leaf in leaf_map.items():
-        leaf_size = len(leaf.places)
-        if leaf_size == 0:
-            continue
-            
-        ideal = k * (leaf_size / K)
-        integer_part = math.floor(ideal)
-        
-        k_alloc[i] = integer_part
-        total_k_allocated += integer_part
-        remainders.append((i, ideal - integer_part))
-        
-    k_remaining = k - total_k_allocated
-    remainders.sort(key=lambda x: x[1], reverse=True)
-    
-    for j in range(min(k_remaining, len(remainders))):
-        idx_to_add = remainders[j][0]
-        k_alloc[idx_to_add] += 1
-        
-    for i, num_to_pick in k_alloc.items():
-        if num_to_pick > 0:
-            leaf = leaf_map[i]
-            actual_pick = min(num_to_pick, len(leaf.places))
-            
-            if actual_pick > 0:
-                R.extend(random.sample(leaf.places, actual_pick))
-                
-    selection_time = time.time() - t_selection_start
-    
-    for i, leaf in leaf_map.items():
-        total_count = len(leaf.places)
-        selected_count = k_alloc.get(i, 0)
-        cell_stats[(i, 0)] = (total_count, selected_count)
-
-    if not R:
-        raise ValueError("Selected sample R is empty, cannot compute HPFR.")
-        
-    score, sum_psS, sum_psR, sum_rF = HPFR(R, optimal_psS, optimal_sS, W, K)
-    
-    return R, score, sum_psS, sum_psR, sum_rF, prep_time, selection_time, len(leaves), cell_stats

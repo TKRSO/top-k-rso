@@ -10,13 +10,14 @@ from log.plotter import ExperimentPlotter
 # --- ALGORITHM IMPORTS ---
 from alg.baseline_iadu import iadu, iadu_no_r, load_dataset
 from alg.grid_iadu import grid_iadu
-from alg.biased_sampling import biased_sampling, old_sampling
-from alg.extension_sampling import grid_sampling, stratified_sampling
+from alg.biased_sampling import biased_sampling, sampling
+from alg.extension_sampling import stratified_sampling, grid_sampling_no_r, grid_sampling
+
 
 def run():
     # 1. Initialize Logger and Plotter
     # The plotter is now initialized once and will accumulate pages into the PDF
-    logger = ExperimentLogger("i am gay", baseline_name="base_iadu", aggregate_datasets=True)
+    logger = ExperimentLogger("var_wrf", baseline_name="base_iadu", aggregate_datasets=True)
     plotter = ExperimentPlotter("plots.pdf")
 
     # 2. Initialize Runner with the Plotter's callback
@@ -26,9 +27,10 @@ def run():
 
     print("Registering algorithms...")
     runner.register("base_iadu", iadu)
-    runner.register("stratified_sampling", stratified_sampling)
-    runner.register("grid_sampling(cardinality)", grid_sampling)
-    runner.register("sampling", old_sampling)
+        
+    runner.register("stratified_sampling(weights)", stratified_sampling)
+    runner.register("stratified_sampling(cardinality)", grid_sampling)
+    
     runner.register("biased_sampling", biased_sampling)
 
     print(f"=== Starting Experiment ===")
